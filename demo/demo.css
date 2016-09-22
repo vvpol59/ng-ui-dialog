@@ -1,0 +1,46 @@
+html {
+  box-sizing: border-box; }
+
+*, *:before, *:after {
+  box-sizing: inherit; }
+
+body {
+  font-family: sans-serif;
+  color: #fff;
+  font-size: 100%;
+  width: 900px;
+  margin: 0 auto; }
+
+div[draggable-widget] {
+  width: 200px;
+  height: 300px;
+  border-radius: 5px;
+  padding: 10px;
+  float: left;
+  margin: 10px; }
+  div[draggable-widget].woks {
+    background: aqua; }
+  div[draggable-widget].mocks {
+    background: cadetblue; }
+  div[draggable-widget].socks {
+    background: red;
+    width: 420px; }
+  div[draggable-widget].pops {
+    background: darkseagreen; }
+  div[draggable-widget].hocks {
+    background: darkred; }
+
+div.widget-placeholder {
+  border: 1px solid red;
+  float: left;
+  height: 300px;
+  margin: 10px; }
+
+div[draggable-widget-handle] {
+  border: 3px solid white;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  color: white;
+  margin-bottom: 1em;
+  cursor: move; }
