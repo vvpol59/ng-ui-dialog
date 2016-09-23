@@ -44,7 +44,6 @@
         });
         angular.element(document).on('mousemove', function(e){
             var dir = current.dir,
-                height, width,
                 pos = {
                     top: current.dialog[0].offsetTop,
                     left: current.dialog[0].offsetLeft,
