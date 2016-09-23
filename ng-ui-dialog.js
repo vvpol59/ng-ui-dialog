@@ -4,23 +4,78 @@
 (function(){
     "use strict";
     var app = angular.module('Test', []),
-        drag = {},
-        dialogs = {};
-    var dialogList = {};
+        current = {},  // текущие данные для перетаскивания и ресайзинга
+ //       dialogs = {};
+     dialogList = {};
     app.$inject = ["$scope"];
-    function initDraggable(e, el, uid){
-        drag.offsetX = e.offsetX;
-        drag.offsetY = e.offsetY;
-        drag.dialog = dialogList[uid].dialog;
+    /**
+     * Инициализация перетаскивания по mousedown
+     * @param e
+     * @param el
+     * @param uid
+     */
+    function initDraggable(e, uid){
+        current.offsetX = e.offsetX;
+        current.offsetY = e.offsetY;
+        current.dialog = dialogList[uid].dialog;
         angular.element(document).one('mouseup', function(e) {
             angular.element(document).off('mousemove');
         });
         angular.element(document).on('mousemove', function(e) {
-            drag.dialog.css({
-                left: e.pageX - drag.offsetX + 'px',
-                top: e.pageY - drag.offsetY + 'px'
+            current.dialog.css({
+                left: e.pageX - current.offsetX + 'px',
+                top: e.pageY - current.offsetY + 'px'
             });
         });
+    }
+
+    function initResize(e){
+
+        current.dialog = angular.element(e.target.parentNode);
+        // Начальное положение диалога
+        current.bottom = current.dialog[0].offsetTop + current.dialog[0].offsetHeight;
+        current.top = current.dialog[0].offsetTop;
+        current.left = current.dialog[0].offsetLeft;
+        current.right = current.dialog[0].offsetLeft + current.dialog[0].offsetWidth;
+        current.dir = e.target.className.split('-')[4]; // Направление ресайзинга
+        console.log(current);
+        angular.element(document).one('mouseup', function(e){
+            angular.element(document).off('mousemove');
+        });
+        angular.element(document).on('mousemove', function(e){
+            var dir = current.dir,
+                height, width,
+                pos = {
+                    top: current.dialog[0].offsetTop,
+                    left: current.dialog[0].offsetLeft,
+                    height: current.dialog[0].offsetHeight,
+                    width: current.dialog[0].offsetWidth
+                },
+                css = {
+                    top: pos.top + 'px',
+                    left: pos.left + 'px',
+                    height: pos.height + 'px'
+           //         width: pos.width + 'px'
+                };
+            pos.bottom = pos.top + pos.height;
+            pos.right = pos.left + pos.width;
+            if ((dir == 'n') || (dir == 'ne') || (dir == 'nw')){ // Верхние движки
+                css.top =  e.pageY + 'px';
+                css.height = pos.bottom - e.pageY + 'px';
+            }
+            if ((dir == 's') || (dir == 'se') || (dir == 'sw')){ // Нижние движки
+                css.height = e.pageY - pos.top + 'px';
+            }
+            if ((dir == 'w') || (dir == 'nw') || (dir == 'sw')){ // левые движки
+                css.left = e.pageX + 'px';
+                css.width = pos.right - e.pageX + 'px';
+            }
+            if ((dir == 'e') || (dir == 'ne') || (dir == 'se')){ // Правые движки
+                css.width = e.pageX - pos.left + 'px'
+            }
+            current.dialog.css(css);
+
+            });
     }
 
     /**
@@ -62,8 +117,6 @@
         var params = definePar((attr.params == undefined) ? [] : attr.params.split(',')),
             label = '',
             uid = attr.uid;
-
-      //  dialog.parent().data('params', params);
         // Прорисовка заголовка
         if (typeof(params.title) == 'string'){
             var btns = params['close-btn'] ? '<div class="dialog-close-btn" ng-click="closeClick(' + uid + ')">X</div>' : '',
@@ -72,9 +125,29 @@
         }
         var templateElement = angular.element('<div class="ng-ui-dialog" ng-show="showDialog' + uid + '">' + label + '</div>');
         dialogList[uid] = {dialog: templateElement, params: params};
-        dialog.wrap($compile(templateElement)(scope));
+        dialog.wrap($compile(templateElement)(scope)); // Оборачивание формы диалога
+        // прорисовка ресизеров
+        if (params.resizable){
+            templateElement.append(angular.element(
+                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-n"></div>' +
+                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-e"></div>' +
+                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-s"></div>' +
+                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-w"></div>' +
+                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-se ui-icon ui-icon-gripsmall-diagonal-se"></div>' +
+                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-sw"></div>' +
+                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-ne"></div>' +
+                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-nw"></div>'
+            ));
+        }
+
     }
 
+    /**
+     * Привязка событий диалогового окна
+     * @param scope
+     * @param dialog
+     * @param attr
+     */
     function post(scope, dialog, attr){
         var widget = dialog.parent(),
             uid = attr.uid,
@@ -84,17 +157,42 @@
             if (typeof(params.title) == 'string') { // За заголовок
                 var handler = widget[0].getElementsByClassName('dialog-title');
                 if (handler.length == 1){
-                    var $hnd = angular.element(handler[0]);
-                    $hnd.on('mousedown', function (e) {
-                        initDraggable(e, $hnd, uid);
+                    angular.element(handler[0]).on('mousedown', function (e) {
+                        initDraggable(e, uid);
                     });
                 }
             }
         }
         // Инициализвция ресайзинга
         if (params.resizable){
+            var resizers = widget[0].getElementsByClassName('dialog-resizable-handle');
+            // всем хандлерам размера ставим событие на mousedown
+            for (var i = 0; i < resizers.length; i++){
+                angular.element(resizers[i]).on('mousedown', initResize);
 
-        }
+              //  {
+                 //  (e)
+
+
+                //});
+
+/*
+                angular.element(resizers[i]).on('mouseup', function(e){
+                    angular.element(document).off('mousemove');
+                    angular.element(document).on('mousemove', function(e) {
+
+                        drag.dialog.css({
+                          //  left: e.pageX - drag.offsetX + 'px',
+                            top: e.pageY - drag.offsetY + 'px',
+                            height: widget[0].offsetHeight + drag.offsetY + 'px'
+                        });
+                    });
+
+                })
+                */
+            }
+
+            }
 
     }
 
