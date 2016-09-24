@@ -53,7 +53,7 @@
         current.top = current.dialog[0].offsetTop;
         current.left = current.dialog[0].offsetLeft;
         current.right = current.dialog[0].offsetLeft + current.dialog[0].offsetWidth;
-        current.dir = e.target.className.split('-')[4]; // Направление ресайзинга
+        current.dir = e.target.className.split('-')[3]; // Направление ресайзинга
         console.log(current);
         angular.element(document).one('mouseup', function(e){
             angular.element(document).off('mousemove');
@@ -133,7 +133,7 @@
             uid = attr.uid;
         // Прорисовка заголовка
         if (typeof(params.title) == 'string'){
-            var btns = params['close-btn'] ? '<div class="dialog-close-btn" ng-click="closeClick(' + uid + ')">X</div>' : '',
+            var btns = params['close-btn'] ? '<div class="dialog-close-btn" ng-click="closeDialog(' + uid + ')"></div>' : '',
                 dragClass = params.draggable ? ' dialog-draggable' : '';
             label = '<div class="ng-ui-dialog-handler"><div class="dialog-title' + dragClass + '">' + params.title + '</div>' + btns + '</div>';
         }
@@ -142,14 +142,14 @@
         dialog.wrap($compile(templateElement)(scope)); // Оборачивание формы диалога
         // Обёртывание диалога в рамки
         templateElement.append(angular.element(
-            '<div style="z-index: 90;" class="dialog-border-n"></div>' +
-            '<div style="z-index: 90;" class="dialog-border-e"></div>' +
-            '<div style="z-index: 90;" class="dialog-border-s"></div>' +
-            '<div style="z-index: 90;" class="dialog-border-w"></div>' +
-            '<div style="z-index: 90;" class="dialog-border-se"></div>' +
-            '<div style="z-index: 90;" class="dialog-border-sw"></div>' +
-            '<div style="z-index: 90;" class="dialog-border-ne"></div>' +
-            '<div style="z-index: 90;" class="dialog-border-nw"></div>'
+            '<div style="z-index: 90;" class="dialog-border dialog-border-n"></div>' +
+            '<div style="z-index: 90;" class="dialog-border dialog-border-e"></div>' +
+            '<div style="z-index: 90;" class="dialog-border dialog-border-s"></div>' +
+            '<div style="z-index: 90;" class="dialog-border dialog-border-w"></div>' +
+            '<div style="z-index: 90;" class="dialog-border dialog-border-se"></div>' +
+            '<div style="z-index: 90;" class="dialog-border dialog-border-sw"></div>' +
+            '<div style="z-index: 90;" class="dialog-border dialog-border-ne"></div>' +
+            '<div style="z-index: 90;" class="dialog-border dialog-border-nw"></div>'
         ));
     }
 
@@ -177,7 +177,7 @@
         // Инициализвция ресайзинга
         if (params.resizable){
             widget.addClass('dialog-resizable');
-            var resizers = widget[0].getElementsByClassName('dialog-resizable-handle');
+            var resizers = widget[0].getElementsByClassName('dialog-border');
             // всем хандлерам размера ставим событие на mousedown
             for (var i = 0; i < resizers.length; i++){
                 angular.element(resizers[i]).on('mousedown', initResize);
@@ -219,7 +219,7 @@
             toggleDialog(true, uidDialog)
         };
         // Скрыть диалог с uidDialog
-        $scope.closeClick = function(uidDialog){
+        $scope.closeDialog = function(uidDialog){
             toggleDialog(false, uidDialog)
         }
     });
