@@ -8,10 +8,13 @@
  //       dialogs = {};
      dialogList = {};
     app.$inject = ["$scope"];
+    angular.element(document).on('show-dialog', function(e){
+        e.detail.$scope['showDialog' + e.detail.uidDialog] = e.detail.show;
+        console.log(e);
+    });
     /**
      * Инициализация перетаскивания по mousedown
      * @param e
-     * @param el
      * @param uid
      */
     function initDraggable(e, uid){
@@ -125,20 +128,17 @@
         var templateElement = angular.element('<div class="ng-ui-dialog" ng-show="showDialog' + uid + '">' + label + '</div>');
         dialogList[uid] = {dialog: templateElement, params: params};
         dialog.wrap($compile(templateElement)(scope)); // Оборачивание формы диалога
-        // прорисовка ресизеров
-        if (params.resizable){
-            templateElement.append(angular.element(
-                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-n"></div>' +
-                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-e"></div>' +
-                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-s"></div>' +
-                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-w"></div>' +
-                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-se ui-icon ui-icon-gripsmall-diagonal-se"></div>' +
-                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-sw"></div>' +
-                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-ne"></div>' +
-                '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-nw"></div>'
-            ));
-        }
-
+        // Обёртывание диалога в рамки
+        templateElement.append(angular.element(
+            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-n"></div>' +
+            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-e"></div>' +
+            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-s"></div>' +
+            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-w"></div>' +
+            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-se ui-icon ui-icon-gripsmall-diagonal-se"></div>' +
+            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-sw"></div>' +
+            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-ne"></div>' +
+            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-nw"></div>'
+        ));
     }
 
     /**
@@ -214,13 +214,26 @@
     }]);
 
     app.controller('testApp', function($scope){
-        $scope.showDialog1 = false;
-        $scope.showDialog = function(dialog){
-            $scope['showDialog' + dialog] = !$scope['showDialog' + dialog];
+        function toggleDialog(show, uidDialog){
+            var trigger = new CustomEvent("show-dialog", {
+                detail: {
+                    uidDialog: uidDialog,
+                    $scope: $scope,
+                    show: show
+                }
+                // }
+            });
+            document.dispatchEvent(trigger);
+        }
+       // $scope.showDialog1 = false;
+        // Показать диалог с uidDialog
+        $scope.showDialog = function(uidDialog) {
+            toggleDialog(true, uidDialog)
         };
-        $scope.closeClick = function(uid){
-            $scope['showDialog' + uid] = false;
-            console.log(uid);
+        // Скрыть диалог с uidDialog
+        $scope.closeClick = function(uidDialog){
+            toggleDialog(false, uidDialog)
+//            $scope['showDialog' + uidDialog] = false;
         }
     });
 })();
