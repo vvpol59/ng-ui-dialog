@@ -1,16 +1,26 @@
 /**
+ * директива диалогового окна а-ля jQuery.dialog
  * Created by vvpol on 17.09.2016.
  */
 (function(){
     "use strict";
     var app = angular.module('Test', []),
+        dialogOverlay = angular.element('<div class="ng-ui-dialog-overlay" style="display: none"></div>'), // Экран для модальных диалогов
         current = {},  // текущие данные для перетаскивания и ресайзинга
- //       dialogs = {};
-     dialogList = {};
-    app.$inject = ["$scope"];
+    dialogList = {};  // Список диалогов по их uid
+    angular.element(document.querySelector("body")).append(dialogOverlay);
+    // Обработчик показа/скрытия окна
     angular.element(document).on('show-dialog', function(e){
+        if (e.detail.show){
+            // Если модальное - ставим экран
+            if (dialogList[e.detail.uidDialog].params.modal){
+                dialogOverlay.css('display', '')
+            }
+            dialogList[e.detail.uidDialog].dialog.css('z-index', 51);
+        } else {
+            dialogOverlay.css('display', 'none')
+        }
         e.detail.$scope['showDialog' + e.detail.uidDialog] = e.detail.show;
-        console.log(e);
     });
     /**
      * Инициализация перетаскивания по mousedown
@@ -32,8 +42,11 @@
         });
     }
 
+    /**
+     * Инициализация ресайзинга
+     * @param e
+     */
     function initResize(e){
-
         current.dialog = angular.element(e.target.parentNode);
         // Начальное положение диалога
         current.bottom = current.dialog[0].offsetTop + current.dialog[0].offsetHeight;
@@ -56,8 +69,8 @@
                 css = {
                     top: pos.top + 'px',
                     left: pos.left + 'px',
-                    height: pos.height + 'px'
-           //         width: pos.width + 'px'
+                    height: pos.height + 'px',
+                    width: pos.width + 'px'
                 };
             pos.bottom = pos.top + pos.height;
             pos.right = pos.left + pos.width;
@@ -76,7 +89,6 @@
                 css.width = e.pageX - pos.left + 'px'
             }
             current.dialog.css(css);
-
             });
     }
 
@@ -168,31 +180,8 @@
             // всем хандлерам размера ставим событие на mousedown
             for (var i = 0; i < resizers.length; i++){
                 angular.element(resizers[i]).on('mousedown', initResize);
-
-              //  {
-                 //  (e)
-
-
-                //});
-
-/*
-                angular.element(resizers[i]).on('mouseup', function(e){
-                    angular.element(document).off('mousemove');
-                    angular.element(document).on('mousemove', function(e) {
-
-                        drag.dialog.css({
-                          //  left: e.pageX - drag.offsetX + 'px',
-                            top: e.pageY - drag.offsetY + 'px',
-                            height: widget[0].offsetHeight + drag.offsetY + 'px'
-                        });
-                    });
-
-                })
-                */
             }
-
-            }
-
+        }
     }
 
     app.directive('ngUiDialog', ["$compile", function($compile) {
@@ -221,11 +210,9 @@
                     $scope: $scope,
                     show: show
                 }
-                // }
             });
             document.dispatchEvent(trigger);
         }
-       // $scope.showDialog1 = false;
         // Показать диалог с uidDialog
         $scope.showDialog = function(uidDialog) {
             toggleDialog(true, uidDialog)
@@ -233,7 +220,6 @@
         // Скрыть диалог с uidDialog
         $scope.closeClick = function(uidDialog){
             toggleDialog(false, uidDialog)
-//            $scope['showDialog' + uidDialog] = false;
         }
     });
 })();
