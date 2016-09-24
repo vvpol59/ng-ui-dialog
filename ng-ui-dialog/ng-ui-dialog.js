@@ -36,8 +36,8 @@
         });
         angular.element(document).on('mousemove', function(e) {
             current.dialog.css({
-                left: e.pageX - current.offsetX + 'px',
-                top: e.pageY - current.offsetY + 'px'
+                left: e.pageX - current.offsetX - 10 + 'px',
+                top: e.pageY - current.offsetY - 10 + 'px'
             });
         });
     }
@@ -63,8 +63,8 @@
                 pos = {
                     top: current.dialog[0].offsetTop,
                     left: current.dialog[0].offsetLeft,
-                    height: current.dialog[0].offsetHeight,
-                    width: current.dialog[0].offsetWidth
+                    height: current.dialog[0].offsetHeight - 10, // padding + border
+                    width: current.dialog[0].offsetWidth - 10
                 },
                 css = {
                     top: pos.top + 'px',
@@ -142,14 +142,14 @@
         dialog.wrap($compile(templateElement)(scope)); // Оборачивание формы диалога
         // Обёртывание диалога в рамки
         templateElement.append(angular.element(
-            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-n"></div>' +
-            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-e"></div>' +
-            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-s"></div>' +
-            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-w"></div>' +
-            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-se ui-icon ui-icon-gripsmall-diagonal-se"></div>' +
-            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-sw"></div>' +
-            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-ne"></div>' +
-            '<div style="z-index: 90;" class="dialog-resizable-handle dialog-resizable-nw"></div>'
+            '<div style="z-index: 90;" class="dialog-border-n"></div>' +
+            '<div style="z-index: 90;" class="dialog-border-e"></div>' +
+            '<div style="z-index: 90;" class="dialog-border-s"></div>' +
+            '<div style="z-index: 90;" class="dialog-border-w"></div>' +
+            '<div style="z-index: 90;" class="dialog-border-se"></div>' +
+            '<div style="z-index: 90;" class="dialog-border-sw"></div>' +
+            '<div style="z-index: 90;" class="dialog-border-ne"></div>' +
+            '<div style="z-index: 90;" class="dialog-border-nw"></div>'
         ));
     }
 
@@ -176,6 +176,7 @@
         }
         // Инициализвция ресайзинга
         if (params.resizable){
+            widget.addClass('dialog-resizable');
             var resizers = widget[0].getElementsByClassName('dialog-resizable-handle');
             // всем хандлерам размера ставим событие на mousedown
             for (var i = 0; i < resizers.length; i++){

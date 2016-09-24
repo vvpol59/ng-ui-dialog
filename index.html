@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html ng-app="Test">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Dialog</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="angular-1.2.30.js"></script>
+    <link rel="stylesheet" type="text/css" href="ng-ui-dialog/ng-ui-dialog.css">
+    <style>
+        .input-item {
+            padding: 8px;
+        }
+        .input-item label   {
+            width: 80px;
+            display: inline-block;
+        }
+        .dialog-body    {
+            background-color: #e0e0e0;
+            border: 1px solid #909090;
+            padding: 2px;
+            margin-top: 2px;
+        }
+    </style>
+
+</head>
+<body ng-controller="testApp">
+<button ng-click="showDialog(1)">Диалог 1</button>
+<button ng-click="showDialog(2)">Диалог 2</button>
+
+<div ng-ui-dialog class="dialog-body" data-uid="1"
+     data-params="handler-class: ng-ui-dialog-handler,draggable: true, resizable:true, title: Личная карточка, close-btn: true">
+    <!-- div -->
+        <div class="input-item">
+            <label>Фамилия</label>
+            <input type="text">
+        </div>
+        <div class="input-item">
+            <label>Имя</label>
+            <input type="text">
+        </div>
+        <div class="input-item">
+            <label>Отчество</label>
+            <input type="text">
+        </div>
+        <div class="input-item">
+            <label>Телефон</label>
+            <input type="text">
+        </div>
+        <div class="input-item">
+            <button>Сохранить</button>
+            <button>Закрыть</button>
+        </div>
+    <!-- /div -->
+</div>
+
+<div ng-ui-dialog data-uid="2"
+     data-params="handler-class: ng-ui-dialog-handler, modal: false, title: диалог 2">
+    <div>
+        Тело диалога 2
+    </div>
+</div>
+
+<script src="ng-ui-dialog/ng-ui-dialog.js"></script>
+
+<!--
+
+-->
+</body>
+</html>
