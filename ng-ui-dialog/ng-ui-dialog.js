@@ -8,20 +8,6 @@
         dialogOverlay = angular.element('<div class="ng-ui-dialog-overlay" style="display: none"></div>'), // Экран для модальных диалогов
         current = {},  // текущие данные для перетаскивания и ресайзинга
     dialogList = {};  // Список диалогов по их uid
-    angular.element(document.querySelector("body")).append(dialogOverlay);
-    // Обработчик показа/скрытия окна
-    angular.element(document).on('show-dialog', function(e){
-        if (e.detail.show){
-            // Если модальное - ставим экран
-            if (dialogList[e.detail.uidDialog].params.modal){
-                dialogOverlay.css('display', '')
-            }
-            dialogList[e.detail.uidDialog].dialog.css('z-index', 51);
-        } else {
-            dialogOverlay.css('display', 'none')
-        }
-        e.detail.$scope['showDialog' + e.detail.uidDialog] = e.detail.show;
-    });
     /**
      * Инициализация перетаскивания по mousedown
      * @param e
@@ -129,11 +115,11 @@
             uid = attr.uid;
         // Прорисовка заголовка
         if (typeof(params.title) == 'string'){
-            var btns = params['close-btn'] ? '<div class="dialog-close-btn" ng-click="closeDialog(' + uid + ')"></div>' : '',
+            var btns = params['close-btn'] ? '<div class="dialog-close-btn" n--g-click="closeDialog(' + uid + ')"></div>' : '',
                 dragClass = params.draggable ? ' dialog-draggable' : '';
             label = '<div class="ng-ui-dialog-handler"><div class="dialog-title' + dragClass + '">' + params.title + '</div>' + btns + '</div>';
         }
-        var templateElement = angular.element('<div class="ng-ui-dialog" ng-show="showDialog' + uid + '">' + label + '</div>');
+        var templateElement = angular.element('<div class="ng-ui-dialog" style="display:none" n--g-show="showDialog' + uid + '">' + label + '</div>');
         dialogList[uid] = {dialog: templateElement, params: params};
         dialog.wrap($compile(templateElement)(scope)); // Оборачивание формы диалога
         // Обёртывание диалога в рамки
@@ -147,6 +133,33 @@
             '<div style="z-index: 90;" class="dialog-border dialog-border-ne"></div>' +
             '<div style="z-index: 90;" class="dialog-border dialog-border-nw"></div>'
         ));
+        // Управление видимостью
+        if (scope.dialogsVisible == undefined){
+            scope.dialogsVisible = {};
+        }
+        scope.dialogsVisible[uid] = false;
+        scope.$watch('dialogsVisible["' + uid + '"]',function(value){
+            if (value){ // Показать
+                // Если модальное - ставим экран
+                if (dialogList[uid].params.modal){
+                    dialogOverlay.css('display', '')
+                }
+                dialogList[uid].dialog.css('z-index', 51);
+            } else {
+                dialogOverlay.css('display', 'none')
+            }
+            dialog.parent().css('display', value ? '' : 'none');
+        });
+        // Обработчик крестика
+        var closeBtn = dialog.parent()[0].getElementsByClassName('dialog-close-btn');
+        if (closeBtn.length == 1){
+            closeBtn[0].addEventListener('click', function(e){
+                scope.$apply(function(scope) {
+
+                    scope.dialogsVisible[uid] = false;
+                });
+            });
+        }
     }
 
     /**
@@ -182,6 +195,7 @@
     }
 
     app.directive('ngUiDialog', ["$compile", function($compile) {
+        angular.element(document.querySelector("body")).append(dialogOverlay);
         return {
             priority: 1,
             compile: function(dialog, attr) {
