@@ -4,7 +4,7 @@
  */
 (function(){
     "use strict";
-    var app = angular.module('Test', []),
+    var app = angular.module('dialogApp', []),
         dialogOverlay = angular.element('<div class="ng-ui-dialog-overlay" style="display: none"></div>'), // Экран для модальных диалогов
         current = {},  // текущие данные для перетаскивания и ресайзинга
     dialogList = {};  // Список диалогов по их uid
@@ -109,13 +109,9 @@
         },
             par;
         // Распаковка параметров
-        for (var i = 0; i < params.length; i++){
-            par = params[i].split(':');
-            par[1] = par[1].trim();
-            if ((par[1] == 'true') || (par[1] == 'false')){
-                par[1] = (par[1] == 'true');
-            }
-            def[par[0].trim()] = par[1];
+        par = JSON.parse(params);
+        for (var item in par){
+            def[item] = par[item];
         }
         return def;
     }
@@ -128,7 +124,7 @@
      * @param attr
      */
     function pre($compile, scope, dialog, attr) {
-        var params = definePar((attr.params == undefined) ? [] : attr.params.split(',')),
+        var params = definePar((attr.params == undefined) ? '{}' : attr.params),
             label = '',
             uid = attr.uid;
         // Прорисовка заголовка
@@ -202,25 +198,4 @@
 
         }
     }]);
-
-    app.controller('testApp', function($scope){
-        function toggleDialog(show, uidDialog){
-            var trigger = new CustomEvent("show-dialog", {
-                detail: {
-                    uidDialog: uidDialog,
-                    $scope: $scope,
-                    show: show
-                }
-            });
-            document.dispatchEvent(trigger);
-        }
-        // Показать диалог с uidDialog
-        $scope.showDialog = function(uidDialog) {
-            toggleDialog(true, uidDialog)
-        };
-        // Скрыть диалог с uidDialog
-        $scope.closeDialog = function(uidDialog){
-            toggleDialog(false, uidDialog)
-        }
-    });
 })();

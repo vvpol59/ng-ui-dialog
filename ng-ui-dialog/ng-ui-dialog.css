@@ -42,7 +42,7 @@
     position: relative;
     width: 16px;
     cursor: pointer;
-    outline: 1px solid inherit;
+    outline: 1px solid #dddddd;
     border-radius: 3px;
 }
 .dialog-close-btn:hover {
